@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Task Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-100 p-6 space-y-6">
+        
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">My Tasks</h1>
+            <p class="text-sm text-slate-500">Stay organized and productive.</p>
+            <form method="POST" action="{% url 'logout' %}" class="mt-2">
+                {% csrf_token %}
+                <button type="submit" class="text-xs text-red-500 hover:underline font-medium">
+                    Logout (Logged in as {{ request.user.username }})
+                </button>
+            </form>
+        </div>
+
+        <form method="POST" class="flex gap-2">
+            {% csrf_token %}
+            <input type="text" name="title" placeholder="What needs to be done?" required
+                   class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition placeholder:text-slate-400 bg-slate-50/50">
+            <button type="submit" 
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-xl shadow-sm transition-all transform active:scale-95">
+                Add
+            </button>
+        </form>
+
+        <div class="h-px bg-slate-100 w-full"></div>
+
+        <ul class="space-y-3 max-h-80 overflow-y-auto pr-1">
+            {% for task in tasks %}
+                <li class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100/80 hover:border-slate-200 transition group">
+                    <div class="flex items-center space-x-3 flex-1 min-w-0">
+                        {% if task.is_completed %}
+                            <span class="text-emerald-500 shrink-0 bg-emerald-50 p-1 rounded-lg">✓</span>
+                            <span class="truncate text-slate-400 line-through font-medium">{{ task.title }}</span>
+                        {% else %}
+                            <span class="w-2 h-2 rounded-full bg-indigo-500 shrink-0 animate-pulse"></span>
+                            <span class="truncate font-medium text-slate-700">{{ task.title }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        {% if not task.is_completed %}
+                            <form method="POST" action="{% url 'complete_task' task.id %}">
+                                {% csrf_token %}
+                                <button type="submit" 
+                                        class="text-xs bg-white border border-slate-200 hover:border-indigo-500 hover:text-indigo-600 text-slate-500 px-2.5 py-1.5 rounded-lg shadow-sm transition font-medium">
+                                    Done
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <form method="POST" action="{% url 'delete_task' task.id %}">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    class="text-xs text-slate-400 hover:text-red-500 hover:bg-red-50 px-2 py-1.5 rounded-lg transition font-medium opacity-0 group-hover:opacity-100 focus:opacity-100">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </li>
+            {% empty %}
+                <li class="text-center py-8 text-slate-400 text-sm">
+                    ✨ Clear skies! No tasks left.
+                </li>
+            {% endfor %}
+        </ul>
+        
+    </div>
+
+</body>
+</html>
